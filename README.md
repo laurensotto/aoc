@@ -8,7 +8,7 @@ My solutions for [Advent of Code](https://adventofcode.com/)!
 | 2        | X                  | X                   | X                      | X                  |  
 | 3        | X                  | X                   | X                      | X                  |  
 | 4        |                    | X                   | X                      | X                  |  
-| 5        |                    | X                   | X                      |                    |  
+| 5        |                    | X                   | X                      | X                  |  
 | 6        |                    |                     | X                      |                    |  
 | 7        |                    |                     |                        |                    |  
 | 8        |                    |                     |                        |                    |  

@@ -14,7 +14,7 @@ func TestSolve(t *testing.T) {
 	answer1, time1, answer2, time2 := solve(string(data))
 
 	expectedPart1 := 41
-	expectedPart2 := 0
+	expectedPart2 := 6
 
 	if answer1 != expectedPart1 {
 		t.Fatalf("Part 1 failed: got %d, expected %d", answer1, expectedPart1)

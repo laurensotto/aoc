@@ -9,7 +9,7 @@ My solutions for [Advent of Code](https://adventofcode.com/)!
 | 3        | X                  | X                   | X                      | X                  |  
 | 4        |                    | X                   | X                      | X                  |  
 | 5        |                    | X                   | X                      | X                  |  
-| 6        |                    |                     | X                      |                    |  
+| 6        |                    |                     | X                      | X                  |  
 | 7        |                    |                     |                        |                    |  
 | 8        |                    |                     |                        |                    |  
 | 9        |                    |                     |                        |                    |  

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -42,7 +44,7 @@ func solve(input string) (int, int64, int, int64) {
 
 	go func() {
 		start := time.Now()
-		result := part1(grid)
+		result := part1(deepCopyGrid(grid))
 		duration := time.Since(start).Milliseconds()
 		answer1Chan <- result
 		time1Chan <- duration
@@ -50,7 +52,7 @@ func solve(input string) (int, int64, int, int64) {
 
 	go func() {
 		start := time.Now()
-		result := part2(grid)
+		result := part2(deepCopyGrid(grid))
 		duration := time.Since(start).Milliseconds()
 		answer2Chan <- result
 		time2Chan <- duration
@@ -94,6 +96,100 @@ func part1(grid [][]string) int {
 }
 
 func part2(grid [][]string) int {
+	xCoordinates, yCoordinates := getRelevantCoordinates(deepCopyGrid(grid))
+
+	var wg sync.WaitGroup
+	resultChan := make(chan int, len(grid)*len(grid[0]))
+
+	for i := 0; i < len(xCoordinates); i++ {
+		wg.Add(1)
+		deepCopiedGrid := deepCopyGrid(grid)
+		deepCopiedGrid[yCoordinates[i]][xCoordinates[i]] = "#"
+
+		go func() {
+			defer wg.Done()
+			resultChan <- solvePart2(deepCopiedGrid)
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	totalOptions := 0
+	for result := range resultChan {
+		totalOptions += result
+	}
+
+	return totalOptions
+}
+
+func getRelevantCoordinates(grid [][]string) ([]int, []int) {
+	currentX, currentY := findStart(grid)
+	direction := "up"
+	guardOnGrid := true
+
+	var xCoordinates []int
+	var yCoordinates []int
+
+	for guardOnGrid {
+		if grid[currentY][currentX] != "X" {
+			xCoordinates = append(xCoordinates, currentX)
+			yCoordinates = append(yCoordinates, currentY)
+			grid[currentY][currentX] = "X"
+		}
+
+		currentX, currentY = getNextPosition(currentX, currentY, direction)
+
+		if isOffGrid(currentX, currentY, grid) {
+			guardOnGrid = false
+			continue
+		}
+
+		if grid[currentY][currentX] == "#" {
+			currentX, currentY = getPreviousPosition(currentX, currentY, direction)
+			direction = rotate(direction)
+		}
+	}
+
+	return xCoordinates, yCoordinates
+}
+
+func solvePart2(grid [][]string) int {
+	currentX, currentY := findStart(grid)
+	direction := "up"
+	guardOnGrid := true
+
+	visitedCoordinates := make(map[string][]string)
+
+	for guardOnGrid {
+		currentCoordinate := strconv.Itoa(currentX) + "," + strconv.Itoa(currentY)
+
+		if _, ok := visitedCoordinates[currentCoordinate]; ok {
+			if contains(visitedCoordinates[currentCoordinate], direction) {
+				return 1
+			}
+		} else {
+			visitedCoordinates[currentCoordinate] = []string{}
+		}
+
+		visitedCoordinates[currentCoordinate] = append(visitedCoordinates[currentCoordinate], direction)
+
+		currentX, currentY = getNextPosition(currentX, currentY, direction)
+
+		if isOffGrid(currentX, currentY, grid) {
+			guardOnGrid = false
+			continue
+		}
+
+		if grid[currentY][currentX] == "#" {
+			currentX, currentY = getPreviousPosition(currentX, currentY, direction)
+			direction = rotate(direction)
+
+		}
+	}
+
 	return 0
 }
 
@@ -151,5 +247,24 @@ func isOffGrid(currentX, currentY int, grid [][]string) bool {
 	if currentX < 0 || currentY < 0 || currentX > len(grid[0])-1 || currentY > len(grid)-1 {
 		return true
 	}
+	return false
+}
+
+func deepCopyGrid(grid [][]string) [][]string {
+	copiedGrid := make([][]string, len(grid))
+	for i := range grid {
+		copiedGrid[i] = make([]string, len(grid[i]))
+		copy(copiedGrid[i], grid[i])
+	}
+	return copiedGrid
+}
+
+func contains(slice []string, int string) bool {
+	for _, value := range slice {
+		if value == int {
+			return true
+		}
+	}
+
 	return false
 }
